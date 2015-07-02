@@ -2,7 +2,13 @@
 
 
 
+
+
+
 echo 'Scripts'
+
+
+
 
 
 # create the VagrantFile
@@ -13,52 +19,89 @@ function hello (){
  echo Hello $1
 }
 
-function setup {
+function build() {
  echo Setup!
+
+ echo ToDo $1 Slaves: [$2]
+ echo "Vagrant.configure('2') do |config|" > Vagrantfile
+ # echo " config.vm.box = '$2'" >> Vagrantfile
+
+
+	for i in $(seq 1 $1);
+	do
+			vm="slave$i"
+			echo " config.vm.define :$vm do |$vm|" >> Vagrantfile
+			echo "  $vm.vm.box = '$2'" >> Vagrantfile
+			echo " end" >> Vagrantfile
+	done
+
+
+ echo "end" >> Vagrantfile
+
 }
 
 
 
+function clear(){
 
+vagrant destroy
 
+}
 
+function start(){
 
+vagrant up
 
+}
 
+function stop(){
 
+vagrant halt
+
+}
+
+function status(){
+
+VBoxManage list runningvms
+
+}
 
 
 case "$1" in
 	hello)
 		hello $2
 		;;
-	setup)
-	    	setup
-	    	;;
-        start)
-            	start
-            	;;
-         
-        stop)
-            	stop
-            	;;
-         
-        status)
-            	status anacron
-            	;;
-        restart)
-            	stop
-            	start
-            	;;
-        condrestart)
-            	if test "x`pidof anacron`" != x; then
-                	stop
-                	start
-            	fi
-            	;;
-         
-        *)
-            echo $"Usage: $0 {start|stop|restart|condrestart|status}"
-            exit 1
+
+	build)
+        build $2 $3
+        ;;
+
+    start)
+        start
+        ;;
+
+    stop)
+        stop
+        ;;
+
+	status)
+        status
+        ;;
+
+    restart)
+		stop
+        start
+        ;;
+
+	clear)
+		clear
+		;;
+	*)
+        echo $"Usage: $0 {start|stop|restart|condrestart|status}"
+        exit 1
  
 esac
+
+echo ---------------------------------------------------
+cat Vagrantfile
+echo ---------------------------------------------------
